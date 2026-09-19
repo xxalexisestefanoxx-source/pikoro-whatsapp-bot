@@ -21,6 +21,7 @@ export async function handleMessage(sock, message, store) {
   if (!text.startsWith(PREFIX)) return
   const [rawCommand, ...args] = text.slice(PREFIX.length).trim().split(/\s+/)
   const command = commands.get(rawCommand?.toLowerCase())
+  console.log(`[dispatch] command=${rawCommand || 'empty'} found=${Boolean(command)} chat=${message.key.remoteJid || 'unknown'}`)
   if (!command) return
 
   const context = {
@@ -35,8 +36,9 @@ export async function handleMessage(sock, message, store) {
   }
   try {
     await command.execute(context)
+    console.log(`[dispatch] completed=${rawCommand}`)
   } catch (error) {
-    console.error(`[command:${rawCommand}]`, error)
+    console.error(`[command:${rawCommand}]`, error?.stack || error)
     await sock.sendMessage(context.chat, { text: 'Ocurrió un error ejecutando el comando.' }, { quoted: message })
   }
 }
