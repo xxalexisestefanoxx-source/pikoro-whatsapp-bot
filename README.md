@@ -45,6 +45,33 @@ export const commands = [{
 
 El prefijo se controla desde `BOT_PREFIX` y por defecto es `.`. El código también acepta `PREFIX` cuando no existe el conflicto reservado de Termux.
 
+## Moderación esencial de grupos
+
+Los comandos de administración requieren que quien los ejecuta sea administrador y que el bot también sea administrador cuando WhatsApp lo exige. Para dirigirse a una persona, responde a su mensaje, etiquétala o escribe su número con código de país.
+
+```text
+.kick @usuario
+.ban @usuario
+.promote @usuario
+.demote @usuario
+.group open
+.group close
+.open
+.close
+.setname Nuevo nombre
+.setreglas texto de las reglas
+.reglas
+.link
+.admins
+.todos mensaje opcional
+.hidetag mensaje opcional
+.mute @usuario
+.unmute @usuario
+.del  (respondiendo a un mensaje)
+```
+
+Para `.kick`, `.ban`, `.promote`, `.demote`, `.group`, `.open`, `.close`, `.setname`, `.setreglas`, `.link`, `.admins`, `.todos`, `.hidetag`, `.mute`, `.unmute` y `.del`, el bot debe tener privilegios de administrador.
+
 ## GitHub
 
 Si el repositorio remoto está vacío o debe recibir esta base por primera vez:

@@ -42,6 +42,7 @@ export async function handleMessage(sock, message, store) {
     console.log(`[dispatch] completed=${rawCommand}`)
   } catch (error) {
     console.error(`[command:${rawCommand}]`, error?.stack || error)
-    await sock.sendMessage(context.chat, { text: 'Ocurrió un error ejecutando el comando.' }, { quoted: message })
+    const detail = error?.message || 'Ocurrió un error ejecutando el comando.'
+    await sock.sendMessage(context.chat, { text: `⚠️ ${detail}` }, { quoted: message })
   }
 }
