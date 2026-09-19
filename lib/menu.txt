@@ -4,9 +4,6 @@
 ┃⋗ 👤 .owner
 ┃⋗ 🌟 .grupos
 ┃⋗ 📜 .menu
-┃⋗ ⚡ .menu2
-┃⋗ 🐼 .menu3
-┃⋗ 🔥 .menu4
 ┃⋗ 📖 .guía
 ┃⋗ 🏓 .ping
 ┃⋗ ⏳ .runtime

@@ -66,6 +66,7 @@ async function getGroupContext({ sock, message, chat, isGroup, sender, senderIds
   const senderIsAdmin = isAdmin(senderParticipant)
   const botIsAdmin = isAdmin(botParticipant)
   const senderIsOwner = ownerIdentities.some((owner) => identityKeys(owner).some((key) => senderIdentities.flatMap(identityKeys).includes(key)))
+  console.log(`[permissions] senderAdmin=${senderIsAdmin} senderOwner=${senderIsOwner} botAdmin=${botIsAdmin} command=${message._command || 'unknown'}`)
   if (!senderIsAdmin && !senderIsOwner) throw new Error('Solo los administradores del grupo pueden usar este comando.')
   if (adminActions.has(message._command) && !botIsAdmin) throw new Error('El bot necesita ser administrador del grupo para ejecutar este comando.')
   return { metadata, participants, botIsAdmin }
