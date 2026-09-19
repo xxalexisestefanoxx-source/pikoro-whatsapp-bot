@@ -53,6 +53,8 @@ export async function startBot() {
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return
     for (const message of messages) {
+      const text = message.message?.conversation || message.message?.extendedTextMessage?.text || ''
+      console.log(`[message] chat=${message.key.remoteJid || 'unknown'} fromMe=${Boolean(message.key.fromMe)} text=${JSON.stringify(text)}`)
       if (!message.message || message.key.remoteJid === 'status@broadcast') continue
       await handleMessage(sock, message, store)
     }
