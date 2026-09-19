@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import http from 'node:http'
 import makeWASocket, { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys'
 import P from 'pino'
 import qrcode from 'qrcode-terminal'
@@ -13,7 +14,14 @@ let pairingRequested = false
 async function start() {
   const { state, saveCreds } = await useMultiFileAuthState(process.env.AUTH_DIR || 'auth_info_baileys')
   const { version } = await fetchLatestBaileysVersion()
-  const sock = makeWASocket({ version, auth: state, logger: P({ level: 'silent' }), printQRInTerminal: false, browser: [BOT_NAME, 'Chrome', '1.0.0'] })
+  const sock = makeWASocket({
+    version,
+    auth: state,
+    logger: P({ level: 'silent' }),
+    printQRInTerminal: false,
+    browser: [BOT_NAME, 'Chrome', '1.0.0']
+  })
+
   sock.ev.on('creds.update', saveCreds)
   sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     if (qr && !process.env.PAIRING_NUMBER) qrcode.generate(qr, { small: true })
@@ -30,17 +38,35 @@ async function start() {
       }, 3000)
     }
     if (connection === 'open') console.log(`${BOT_NAME} conectado.`)
-    if (connection === 'close') { const code = lastDisconnect?.error?.output?.statusCode; if (code !== DisconnectReason.loggedOut) start(); else console.error('Sesión cerrada: elimina auth_info_baileys y vuelve a vincular.') }
+    if (connection === 'close') {
+      const code = lastDisconnect?.error?.output?.statusCode
+      if (code !== DisconnectReason.loggedOut) start()
+      else console.error('Sesión cerrada: elimina auth_info_baileys y vuelve a vincular.')
+    }
   })
+
   sock.ev.on('messages.upsert', async ({ messages }) => {
-    const m = messages[0]; if (!m?.message || m.key.fromMe) return
-    const jid = m.key.remoteJid; const text = m.message.conversation || m.message.extendedTextMessage?.text || ''
+    const m = messages[0]
+    if (!m?.message || m.key.fromMe) return
+    const jid = m.key.remoteJid
+    const text = m.message.conversation || m.message.extendedTextMessage?.text || ''
     if (!text.startsWith(PREFIX)) return
-    const body = text.slice(PREFIX.length).trim(); const [raw, ...args] = body.split(/\s+/); if (!raw) return
+    const body = text.slice(PREFIX.length).trim()
+    const [raw, ...args] = body.split(/\\s+/)
+    if (!raw) return
     const metadata = jid.endsWith('@g.us') ? await sock.groupMetadata(jid).catch(() => null) : null
-    const sender = m.key.participant || jid; const admins = metadata?.participants?.filter(p => p.admin).map(p => p.id) || []
-    const isAdmin = admins.includes(sender); const isOwner = isOwnerOf(sender)
+    const sender = m.key.participant || jid
+    const admins = metadata?.participants?.filter(p => p.admin).map(p => p.id) || []
+    const isAdmin = admins.includes(sender)
+    const isOwner = isOwnerOf(sender)
     await dispatch({ sock, m, jid, sender, args, command: raw, isGroup: !!metadata, groupJid: jid, isAdmin, isOwner, startedAt })
   })
 }
+
+const port = Number(process.env.PORT || 10000)
+http.createServer((req, res) => {
+  res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' })
+  res.end(`${BOT_NAME} activo\\n`)
+}).listen(port, '0.0.0.0', () => console.log(`Health server activo en ${port}`))
+
 start().catch(console.error)
