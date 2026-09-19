@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-const PREFIX = process.env.PREFIX || '.'
+const PREFIX = (process.env.PREFIX || '.').trim()
 const commands = new Map()
 
 export async function loadCommands() {
@@ -18,6 +18,7 @@ export async function loadCommands() {
 
 export async function handleMessage(sock, message, store) {
   const text = message.message?.conversation || message.message?.extendedTextMessage?.text || ''
+  console.log(`[handler] prefix=${JSON.stringify(PREFIX)} startsWith=${text.startsWith(PREFIX)} text=${JSON.stringify(text)}`)
   if (!text.startsWith(PREFIX)) return
   const [rawCommand, ...args] = text.slice(PREFIX.length).trim().split(/\s+/)
   const command = commands.get(rawCommand?.toLowerCase())
