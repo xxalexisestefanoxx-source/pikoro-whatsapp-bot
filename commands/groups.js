@@ -5,8 +5,22 @@ function jidFromNumber(value) {
   return digits.length >= 7 ? `${digits}@s.whatsapp.net` : null
 }
 
-function normalizeJid(jid) {
-  return String(jid || '').replace(/:.*@/, '@')
+function identityKeys(value) {
+  const raw = String(value || '').trim().toLowerCase()
+  if (!raw) return []
+  const normalized = raw.replace(/:.*@/, '@').replace('@c.us', '@s.whatsapp.net')
+  const number = normalized.split('@')[0].replace(/\D/g, '')
+  return [...new Set([normalized, number && `number:${number}`].filter(Boolean))]
+}
+
+function participantKeys(participant) {
+  return [participant?.id, participant?.jid, participant?.lid, participant?.phoneNumber, participant?.phone]
+    .flatMap(identityKeys)
+}
+
+function matchesIdentity(participant, identities) {
+  const known = new Set(identities.flatMap(identityKeys))
+  return participantKeys(participant).some((key) => known.has(key))
 }
 
 function mentioned(message) {
@@ -30,17 +44,19 @@ async function reply(sock, chat, message, text) {
   await sock.sendMessage(chat, { text }, { quoted: message })
 }
 
-async function getGroupContext({ sock, message, chat, isGroup, sender }) {
+async function getGroupContext({ sock, message, chat, isGroup, sender, senderIds }) {
   if (!isGroup) throw new Error('Este comando solo funciona en grupos.')
   const metadata = await sock.groupMetadata(chat)
   const participants = metadata.participants || []
-  const senderId = normalizeJid(sender)
-  const botId = normalizeJid(sock.user?.id)
-  const senderParticipant = participants.find((p) => normalizeJid(p.id) === senderId)
-  const botParticipant = participants.find((p) => normalizeJid(p.id) === botId)
+  const senderIdentities = senderIds?.length ? senderIds : [sender]
+  const botIdentities = [sock.user?.id, sock.user?.lid, sock.user?.jid].filter(Boolean)
+  const ownerIdentities = [process.env.OWNER_NUMBER, jidFromNumber(process.env.OWNER_NUMBER)].filter(Boolean)
+  const senderParticipant = participants.find((p) => matchesIdentity(p, senderIdentities))
+  const botParticipant = participants.find((p) => matchesIdentity(p, botIdentities))
   const senderIsAdmin = Boolean(senderParticipant?.admin)
   const botIsAdmin = Boolean(botParticipant?.admin)
-  if (!senderIsAdmin) throw new Error('Solo los administradores del grupo pueden usar este comando.')
+  const senderIsOwner = ownerIdentities.some((owner) => identityKeys(owner).some((key) => senderIdentities.flatMap(identityKeys).includes(key)))
+  if (!senderIsAdmin && !senderIsOwner) throw new Error('Solo los administradores del grupo pueden usar este comando.')
   if (adminActions.has(message._command) && !botIsAdmin) throw new Error('Necesito ser administrador del grupo para ejecutar este comando.')
   return { metadata, participants, botIsAdmin }
 }
@@ -53,7 +69,7 @@ async function updateParticipants(context, action, success) {
   const { sock, chat, message, args } = context
   const jids = targetJids({ message, args })
   if (!jids.length) return reply(sock, chat, message, 'Responde al mensaje, etiqueta a un usuario o escribe su número con código de país.')
-  if (jids.some((jid) => normalizeJid(jid) === normalizeJid(sock.user?.id))) return reply(sock, chat, message, 'No puedo aplicar esa acción sobre mí mismo.')
+  if (jids.some((jid) => identityKeys(jid).some((key) => identityKeys(sock.user?.id).includes(key)))) return reply(sock, chat, message, 'No puedo aplicar esa acción sobre mí mismo.')
   await sock.groupParticipantsUpdate(chat, jids, action)
   await reply(sock, chat, message, `${success}: ${targetLabel(jids)}`)
 }

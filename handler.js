@@ -35,6 +35,14 @@ export async function handleMessage(sock, message, store) {
     text: args.join(' '),
     chat: message.key.remoteJid,
     sender: message.key.participant || message.key.remoteJid,
+    senderIds: [
+      message.key.participant,
+      message.key.participantAlt,
+      message.participant,
+      message.participantAlt,
+      message.key.senderPn,
+      message.key.senderLid
+    ].filter(Boolean),
     isGroup: message.key.remoteJid?.endsWith('@g.us')
   }
   try {

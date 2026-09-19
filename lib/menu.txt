@@ -1,16 +1,16 @@
 🪙 𝐌 𝐔 𝐋 𝐓 𝐈 - 𝐌 𝐄 𝐍 𝘶́
 「 📚 𝘐𝘯𝘧𝘰 📚 」
 ┣━━━━━━━━━━━━━━┫
-┃⋗ 👤 .owner
-┃⋗ 🌟 .grupos
-┃⋗ 📜 .menu
-┃⋗ ⚡ .menu2
-┃⋗ 🐼 .menu3
-┃⋗ 🔥 .menu4
-┃⋗ 📖 .guía
-┃⋗ 🏓 .ping
-┃⋗ ⏳ .runtime
-┃⋗ 📢 .reportar
+┃⋗ 👤 .owner (Muestra info del creador)
+┃⋗ 🌟 .grupos (Muestra grupos oficiales)
+┃⋗ 📜 .menu (Menú principal)
+┃⋗ ⚡ .menu2 (Menú de comandos, página 2)
+┃⋗ 🐼 .menu3 (Menú de comandos, página 3)
+┃⋗ 🔥 .menu4 (Menú de comandos, página 4)
+┃⋗ 📖 .guía (Guía de uso)
+┃⋗ 🏓 .ping (Velocidad del bot)
+┃⋗ ⏳ .runtime (Tiempo activo)
+┃⋗ 📢 .reportar (Reporta un error)
 ┗━━━━━━━━━━━━━━┛
 「 🔎 𝘉𝘶𝘴𝘲𝘶𝘦𝘥𝘢𝘴 🔎 」
 ┣━━━━━━━━━━━━━━┫
