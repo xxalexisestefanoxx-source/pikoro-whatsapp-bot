@@ -1,0 +1,224 @@
+export const MENU = `🪙 𝐌 𝐔 𝐋 𝐓 𝐈 - 𝐌 𝐄 𝐍 𝐔́
+
+      「 *📚 𝘐𝘯𝘧𝘰 📚* 」  
+┣━━━━━━━━━━━━━━┫
+┃⋗ 👤 *.owner*  
+┃⋗ 🌟 *.grupos*  
+┃⋗ 📜 *.menu*  
+┃⋗ ⚡ *.menu2*  
+┃⋗ 🐼 *.menu3* 
+┃⋗ 🔥 *.menu4*
+┃⋗ 📖 *.guía*
+┃⋗ 🏓 *.ping*  
+┃⋗ ⏳ *.runtime*  
+┃⋗ 📢 *.reportar*  
+┗━━━━━━━━━━━━━━┛
+
+  「 *🔎 𝘉𝘶𝘴𝘲𝘶𝘦𝘥𝘢𝘴 🔎* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 📷 *.imagen <texto>*
+┃⋗ 🔍 *.ytsearch <búsqueda>*
+┃⋗ 🎵 *.tiktoksearch <búsqueda>*
+┗━━━━━━━━━━━━━━┛
+
+    「 *👥 𝘎𝘳𝘶𝘱𝘰𝘴 👥* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 💡 *.record*
+┃⋗ 🗑️ *.del*   
+┃⋗ 🔗 *.link*  
+┃⋗ 🚫 *.block*  
+┃⋗ ✅ *.unblock*
+┃⋗ ❌ *.kick @user*  
+┃⋗ 🎯 *.ruletaban*  
+┃⋗ 👮 *.admins < Texto >*  
+┃⋗ 🚫 *.mute*  
+┃⋗ ✅ *.unmute*
+┃⋗ 🌎 *.pais*
+┃⋗ 📣 *.todos*  
+┃⋗ 🚫 *.banchat*  
+┃⋗ ✅ *.unbanchat*  
+┃⋗ ⏰ *.horario*  
+┃⋗ 🤫 *.hidetag*  
+┃⋗ 📜 *.reglas*  
+┃⋗ 👻 *.fantasmas*
+┃⋗ 👻 *.kickfantasmas*  
+┃⋗ 🔄 *.nuevolink*  
+┃⋗ 🎁 *.donarsala*  
+┃⋗ 🎟️ *.sorteo*  
+┃⋗ 📲 *.invite <número>*  
+┃⋗ 🛠️ *.group open / close*  
+┃⋗ 🔓 *.grupo abrir / cerrar*  
+┃⋗ ✏️ *.setname <text>*  
+┃⋗ 📝 *.setreglas + Texto*  
+┃⋗ 🔓 *.abrirgrupoen minutos*  
+┃⋗ 🔒 *.cerrargrupoen minutos*  
+┃⋗ 👋 *.setwelcome @user + texto*
+┃⋗ 🗑️ *.delwelcome*
+┃⋗ 👋 *.setbye @user + texto*
+┃⋗ 🗑️ *.delbye*
+┃⋗ 📈 *.promote @usuario*  
+┃⋗ 📉 *.demote @usuario*  
+┃⋗ 📈 *.darpoder @usuario*  
+┃⋗ 📉 *.delpoder @usuario*  
+┗━━━━━━━━━━━━━━┛
+
+  「 *📥 𝘋𝘦𝘴𝘤𝘢𝘳𝘨𝘢𝘴 📥* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 🎧 *.play <canción>*
+┃⋗ 🎧 *.play1 <canción>*
+┃⋗ 🎥 *.play2 <canción>*
+┃⋗ 🎧 *.spotify <canción>*
+┃⋗ 📸 *.ig <link>*  
+┃⋗ 🎥 *.fb <link>*
+┃⋗ 🎥 *.tiktok <url tt>*
+┃⋗ 🎥 *.tiktokimg <url tt>*
+┗━━━━━━━━━━━━━━┛
+
+   「 *😺 𝘊𝘳𝘦𝘢𝘥𝘰𝘳 😺* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 🛡️ *.autoadmin*  
+┃⋗ ⛔ *.ban @user*
+┃⋗ ✅ *.unban @user* 
+┃⋗ 📈 *.dargod*  
+┃⋗ 📉 *.delgod*      
+┃⋗ 🔑 *.dsowner*  
+┃⋗ 💢 *.chetar*  
+┃⋗ 🌐 *.join <link>*
+┃⋗ 🔄 *.reiniciar*
+┃⋗ 🚪 *.salir*
+┃⋗ 🔄 *.update*
+┃⋗ 📋 *.gp*
+┃⋗ 📅 *.gp <número> <día>*
+┃⋗ 🔔 *.gpr <número>*
+┃⋗ 🚪 *.gs <número>*
+┗━━━━━━━━━━━━━━┛
+
+   「 *📸 𝘐𝘮𝘢́𝘨𝘦𝘯𝘦𝘴 📸* 」
+┣━━━━━━━━━━━━━━┫
+┃⋗ 😿 *.sadcat <texto>*
+┃⋗ 🐦 *.tweet <comentario>*
+┗━━━━━━━━━━━━━━┛
+
+   「 *📴 𝘖𝘯 / 𝘖𝘧𝘧 📴* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ ✅ *.enable*  
+┃⋗ ❌ *.disable*  
+┗━━━━━━━━━━━━━━┛
+
+「 *🔧 𝘏𝘦𝘳𝘳𝘢𝘮𝘪𝘦𝘯𝘵𝘢𝘴 🔧* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 🎙️ *.gtts <texto>*  
+┃⋗ 🌦️ *.clima <ciudad/país>*  
+┃⋗ 💻 *.Ia <texto>*  
+┃⋗ 🔄 *.reenviar*  
+┃⋗ 👀 *.ver*  
+┃⋗ 🎥 *.togifaud*  
+┃⋗ 🎵 *.tomp3*  
+┃⋗ 🖥️ *.hd*  
+┃⋗ 🎧 *.whatmusic* 
+┗━━━━━━━━━━━━━━┛
+
+   「 *🎲 𝘋𝘪𝘷𝘦𝘳𝘴𝘪𝘰́𝘯 🎲* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 🤗 *.abrazar <@usuario>*  
+┃⋗ 🐾 *.acariciar @tag*  
+┃⋗ ❓ *.acertijo*  
+┃⋗ 🎲 *.dado* 
+┃⋗ 🎬 *.advpeli*  
+┃⋗ 😍 *.minovia @user*
+┃⋗ 😍 *.minovio @user*
+┃⋗ 🌈 *.gay <@tag> | <nombre>*  
+┃⋗ 🌈 *.lesbiana <@tag> | <nombre>*  
+┃⋗ 🐵 *.pajero <@tag> | <nombre>*  
+┃⋗ 🇵🇪 *.peruano <@tag> | <nombre>*  
+┃⋗ 🇵🇪 *.peruana <@tag> | <nombre>*  
+┃⋗ 🐵 *.pajera <@tag> | <nombre>*  
+┃⋗ 😈 *.puto <@tag> | <nombre>*  
+┃⋗ 😈 *.puta <@tag> | <nombre>*  
+┃⋗ 🤕 *.manco <@tag> | <nombre>*  
+┃⋗ 🤕 *.manca <@tag> | <nombre>*  
+┃⋗ 🐀 *.rata <@tag> | <nombre>*  
+┃⋗ 🛑 *.prostituta <@tag> | <nombre>*  
+┃⋗ 🛑 *.prostituto <@tag> | <nombre>*  
+┃⋗ 👿 *.cachuda @tag | nombre*  
+┃⋗ ✊🏿 *.negra @tag | nombre*  
+┃⋗ 🍼 *.adoptado @tag | nombre*  
+┃⋗ 👙 *.sintetas @tag | nombre*  
+┃⋗ 🍑 *.sinpoto @tag | nombre*  
+┃⋗ 🍆 *.sinpito @tag | nombre*  
+┃⋗ 😬 *.feo @tag | nombre*  
+┃⋗ 👿 *.cachudo @tag | nombre*  
+┃⋗ 😬 *.fea @tag | nombre*  
+┃⋗ ✊🏿 *.negro @tag | nombre*  
+┃⋗ 🍼 *.adoptada @tag | nombre*  
+┃⋗ 🥷 *.nombreninja <texto>*  
+┃⋗ 😈 *.penetrar @user*  
+┃⋗ 💡 *.consejo*  
+┃⋗ 💃 *.dance <@user>*  
+┃⋗ 😈 *.follar*  
+┃⋗ ❤️ *.formarpareja*    
+┃⋗ 🔞 *.horny*  
+┃⋗ 🧠 *.iqtest*  
+┃⋗ 💋 *.besar @tag*  
+┃⋗ ❤️ *.love <@user>*    
+┃⋗ 🔮 *.personalidad <nombre>*  
+┃⋗ 💌 *.piropo*  
+┃⋗ ❤️ *.poema*  
+┃⋗ 🎴 *.ppt*  
+┃⋗ ❓ *.pregunta*  
+┃⋗ 🎲 *.reto*  
+┃⋗ 😭 *.triste @tag*  
+┃⋗ 👫 *.ship*  
+┃⋗ 👫 *.ship5*  
+┃⋗ 🎰 *.slot <apuesta>*  
+┃⋗ 🔝 *.top <texto>*  
+┃⋗ 🔞 *.violar*  
+┃⋗ 🌌 *.zodiac <AAAA MM DD>*  
+┗━━━━━━━━━━━━━━┛
+
+   「 *📂 𝘙𝘦𝘨𝘪𝘴𝘵𝘳𝘰 📂* 」  
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 📝 *.perfil*  
+┃⋗ 📝 *.reg *<nombre.edad>*  
+┃⋗ 📝 *.unreg*  
+┗━━━━━━━━━━━━━━┛
+
+    「 *🌟 𝘙𝘗𝘎 🌟* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 💼 *.claim*  
+┃⋗ 💼 *.crimen*  
+┃⋗ ⚡ *.levelup*  
+┃⋗ ⛏️ *.minar*  
+┃⋗ 🛒 *.tienda* 
+┃⋗ 🫘 *.comprar*  
+┃⋗ 🛍️ *.Buy*  
+┃⋗ 🛍️ *.Buyall*
+┃⋗ 💼 *.work*  
+┗━━━━━━━━━━━━━━┛
+
+    「 *𝘚𝘵𝘪𝘤𝘬𝘦𝘳𝘴 🏞* 」     
+┣━━━━━━━━━━━━━━┫  
+┃⋗ 💬 *.qc <texto>*  
+┃⋗ 💩 *.scat*  
+┃⋗ 🎨 *.sticker*
+┃⋗ 🖼️ *.toimg / .tovid (reply)*
+┃⋗ 🗂️ *.wm*
+┃⋗ 🖼️ *.brat (reply)*  
+┃⋗ 🖼️ *.bratvideo (reply)*  
+┗━━━━━━━━━━━━━━┛
+
+      「 *𝘕𝘴𝘧𝘸 🔞*  」
+┣━━━━━━━━━━━━━━┫    
+┃⋗ 🔞 *.booty*  
+┃⋗ 🔞 *.ecchi*  
+┃⋗ 🔞 *.furro*  
+┃⋗ 🔞 *.lesbianas*  
+┃⋗ 🔞 *.loli*  
+┃⋗ 🔞 *.panties*  
+┃⋗ 🔞 *.pene*    
+┃⋗ 🔞 *.pechos*  
+┃⋗ 🔞 *.tetas*  
+┃⋗ 🔞 *.trapito*  
+┗━━━━━━━━━━━━━━┛
+
+> 𝙿𝙸𝙺𝙾𝚁𝙾 𝚆𝙷𝙰𝚃𝚂𝙰𝙿𝙿 𝙱𝙾𝚃 📈`
