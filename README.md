@@ -29,6 +29,16 @@ Al iniciar por primera vez aparecerá un QR en la terminal. Escanéalo desde Wha
 | `commands/basic.js` | Comandos base `.ping`, `.runtime`, `.owner`, `.help`. |
 | `lib/menu.txt` | Texto exacto del menú solicitado. |
 | `lib/store.js` | Persistencia JSON local. |
+| `lib/providers.js` | Adaptadores opcionales para un proveedor multimedia y uno de IA. |
+| `commands/group-tools.js` | Búsquedas, control de chat, invitaciones, bienvenidas y automatizaciones. |
+| `commands/downloads.js` | Play, Spotify, Instagram, Facebook y TikTok. |
+| `commands/creator.js` | Acciones protegidas por `OWNER_NUMBER`. |
+| `commands/tools.js` | Clima, TTS, IA y conversiones conectables. |
+| `commands/fun.js` | Juegos y respuestas sociales. |
+| `commands/profile.js` | Registro y perfiles. |
+| `commands/rpg.js` | Economía, XP, niveles e inventario. |
+| `commands/media.js` | Stickers y conversiones multimedia con capacidades declaradas. |
+| `commands/nsfw.js` | Respuestas de seguridad para comandos NSFW deshabilitados. |
 
 ## Crear o modificar comandos
 
@@ -44,6 +54,30 @@ export const commands = [{
 ```
 
 El prefijo se controla desde `BOT_PREFIX` y por defecto es `.`. El código también acepta `PREFIX` cuando no existe el conflicto reservado de Termux.
+
+## Proveedores externos opcionales
+
+El repositorio no incluye claves ni depende de un proveedor no verificado. Para activar descargas reales, conversiones multimedia o IA, configura en `.env` un servicio autorizado:
+
+```env
+MEDIA_API_URL=https://tu-servicio.example/api/media
+MEDIA_API_KEY=tu-clave-secreta
+AI_API_URL=https://tu-servicio.example/api/text
+AI_API_KEY=tu-clave-secreta
+```
+
+El adaptador multimedia envía `{ operation, query, url, type }` y espera JSON con `url` y, opcionalmente, `title`. El adaptador de texto envía `{ prompt }` y acepta `text`, `response` o `answer`. Si las variables están vacías, el bot ofrece un enlace de búsqueda o explica qué integración falta, sin fingir que descargó un archivo.
+
+## Despliegue y verificación
+
+El servicio HTTP expone `/health` y escucha en `0.0.0.0:$PORT`, por lo que puede ser usado por Railway u otro proveedor Node.js. Después de desplegar:
+
+```bash
+curl http://localhost:3000/health
+npm run lint
+```
+
+Configura un volumen persistente para `sessions/` y nunca subas `.env`, `sessions/` o claves de APIs al repositorio.
 
 ## Moderación esencial de grupos
 
