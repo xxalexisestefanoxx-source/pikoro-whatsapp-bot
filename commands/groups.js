@@ -23,6 +23,10 @@ function matchesIdentity(participant, identities) {
   return participantKeys(participant).some((key) => known.has(key))
 }
 
+function isAdmin(participant) {
+  return participant?.admin === 'admin' || participant?.admin === 'superadmin' || participant?.admin === true
+}
+
 function mentioned(message) {
   return message.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
 }
@@ -49,15 +53,21 @@ async function getGroupContext({ sock, message, chat, isGroup, sender, senderIds
   const metadata = await sock.groupMetadata(chat)
   const participants = metadata.participants || []
   const senderIdentities = senderIds?.length ? senderIds : [sender]
-  const botIdentities = [sock.user?.id, sock.user?.lid, sock.user?.jid].filter(Boolean)
+  const botIdentities = [
+    sock.user?.id,
+    sock.user?.lid,
+    sock.user?.jid,
+    sock.user?.phoneNumber,
+    sock.user?.id?.split(':')[0]
+  ].filter(Boolean)
   const ownerIdentities = [process.env.OWNER_NUMBER, jidFromNumber(process.env.OWNER_NUMBER)].filter(Boolean)
   const senderParticipant = participants.find((p) => matchesIdentity(p, senderIdentities))
   const botParticipant = participants.find((p) => matchesIdentity(p, botIdentities))
-  const senderIsAdmin = Boolean(senderParticipant?.admin)
-  const botIsAdmin = Boolean(botParticipant?.admin)
+  const senderIsAdmin = isAdmin(senderParticipant)
+  const botIsAdmin = isAdmin(botParticipant)
   const senderIsOwner = ownerIdentities.some((owner) => identityKeys(owner).some((key) => senderIdentities.flatMap(identityKeys).includes(key)))
   if (!senderIsAdmin && !senderIsOwner) throw new Error('Solo los administradores del grupo pueden usar este comando.')
-  if (adminActions.has(message._command) && !botIsAdmin) throw new Error('Necesito ser administrador del grupo para ejecutar este comando.')
+  if (adminActions.has(message._command) && !botIsAdmin) throw new Error('El bot necesita ser administrador del grupo para ejecutar este comando.')
   return { metadata, participants, botIsAdmin }
 }
 

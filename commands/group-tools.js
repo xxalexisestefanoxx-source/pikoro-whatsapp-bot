@@ -24,7 +24,7 @@ function requireAdmin(metadata, senderIds, ownerNumber) {
   const isOwner = [...sender].some((key) => owner.has(key))
   const isAdmin = (metadata.participants || []).some((participant) => {
     const participantKeys = [participant.id, participant.jid, participant.lid, participant.phoneNumber, participant.phone].flatMap(tokens)
-    return participantKeys.some((key) => sender.has(key)) && Boolean(participant.admin)
+    return participantKeys.some((key) => sender.has(key)) && ['admin', 'superadmin', true].includes(participant.admin)
   })
   if (!isAdmin && !isOwner) throw new Error('Solo los administradores del grupo pueden usar este comando.')
 }
