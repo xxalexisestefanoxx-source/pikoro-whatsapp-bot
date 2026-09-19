@@ -68,6 +68,8 @@ AI_API_KEY=tu-clave-secreta
 
 El adaptador multimedia envía `{ operation, query, url, type }` y espera JSON con `url` y, opcionalmente, `title`. El adaptador de texto envía `{ prompt }` y acepta `text`, `response` o `answer`. Si las variables están vacías, el bot ofrece un enlace de búsqueda o explica qué integración falta, sin fingir que descargó un archivo.
 
+Por decisión de despliegue actual, los comandos que dependen de APIs, URL o procesadores externos están desactivados desde `handler.js`: `.imagen`, `.ytsearch`, `.tiktoksearch`, `.play`, `.play1`, `.play2`, `.spotify`, `.ig`, `.fb`, `.tiktok`, `.tiktokimg`, `.sadcat`, `.gtts`, `.clima`, `.Ia`, `.togifaud`, `.tomp3`, `.hd`, `.whatmusic`, `.sticker`, `.toimg`, `.tovid`, `.wm` y `.bratvideo`. Responden con un aviso de pausa y no realizan conexiones externas.
+
 ## Despliegue y verificación
 
 El servicio HTTP expone `/health` y escucha en `0.0.0.0:$PORT`, por lo que puede ser usado por Railway u otro proveedor Node.js. Después de desplegar:
