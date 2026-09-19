@@ -1,7 +1,9 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-const PREFIX = (process.env.PREFIX || '.').trim()
+// Termux defines PREFIX globally as its installation path. Only accept a
+// one-character command prefix from PREFIX; otherwise use the bot default.
+const PREFIX = (process.env.BOT_PREFIX || (process.env.PREFIX?.length === 1 ? process.env.PREFIX : '.')).trim()
 const commands = new Map()
 
 export async function loadCommands() {

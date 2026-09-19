@@ -1,6 +1,6 @@
 # PIKORO WHATSAPP BOT
 
-Base modular para un bot de WhatsApp con Node.js, Baileys y prefijo nativo `.`. La arquitectura toma como referencia la separación de `main.js`, `handler.js`, `commands/` y persistencia local observada en [nexusday/pain-bot](https://github.com/nexusday/pain-bot), sin copiar credenciales ni sesiones.
+Base modular para un bot de WhatsApp con Node.js, Baileys y prefijo nativo `.`. En Termux se configura como `BOT_PREFIX` porque `PREFIX` es una variable reservada por el sistema. La arquitectura toma como referencia la separación de `main.js`, `handler.js`, `commands/` y persistencia local observada en [nexusday/pain-bot](https://github.com/nexusday/pain-bot), sin copiar credenciales ni sesiones.
 
 ## Requisitos
 
@@ -43,7 +43,7 @@ export const commands = [{
 }]
 ```
 
-El prefijo se controla desde `PREFIX` y por defecto es `.`.
+El prefijo se controla desde `BOT_PREFIX` y por defecto es `.`. El código también acepta `PREFIX` cuando no existe el conflicto reservado de Termux.
 
 ## GitHub
 
