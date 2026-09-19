@@ -51,6 +51,7 @@ export async function handleMessage(sock, message, store) {
     store.chats[context.chat].activity[context.sender] = Date.now()
     if (store.chats[context.chat].banned && !['unbanchat', 'owner'].includes(rawCommand?.toLowerCase())) return
   }
+  if (store.settings[context.chat]?.enabled === false && rawCommand?.toLowerCase() !== 'enable') return
   try {
     await command.execute(context)
     console.log(`[dispatch] completed=${rawCommand}`)
