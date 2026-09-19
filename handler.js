@@ -45,6 +45,11 @@ export async function handleMessage(sock, message, store) {
     ].filter(Boolean),
     isGroup: message.key.remoteJid?.endsWith('@g.us')
   }
+  if (context.isGroup) {
+    store.chats[context.chat] ||= {}
+    store.chats[context.chat].activity ||= {}
+    store.chats[context.chat].activity[context.sender] = Date.now()
+  }
   try {
     await command.execute(context)
     console.log(`[dispatch] completed=${rawCommand}`)

@@ -38,6 +38,14 @@ export async function startBot() {
   starting = false
 
   sock.ev.on('creds.update', saveCreds)
+  sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
+    const config = store.chats[id]
+    const template = action === 'add' ? config?.welcome : action === 'remove' ? config?.bye : null
+    if (!template || !participants?.length) return
+    const mentions = participants
+    const names = participants.map((jid) => `@${jid.split('@')[0]}`).join(', ')
+    await sock.sendMessage(id, { text: template.replaceAll('{user}', names), mentions }).catch((error) => console.error('[welcome/bye]', error.message))
+  })
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
     if (qr) qrcode.generate(qr, { small: true })
     if (connection === 'open') {
