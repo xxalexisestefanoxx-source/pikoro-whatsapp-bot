@@ -49,6 +49,7 @@ export async function handleMessage(sock, message, store) {
     store.chats[context.chat] ||= {}
     store.chats[context.chat].activity ||= {}
     store.chats[context.chat].activity[context.sender] = Date.now()
+    if (store.chats[context.chat].banned && !['unbanchat', 'owner'].includes(rawCommand?.toLowerCase())) return
   }
   try {
     await command.execute(context)
