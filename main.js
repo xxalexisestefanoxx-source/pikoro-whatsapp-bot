@@ -1,0 +1,63 @@
+import 'dotenv/config'
+import makeWASocket, {
+  Browsers,
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+  makeCacheableSignalKeyStore,
+  useMultiFileAuthState
+} from '@whiskeysockets/baileys'
+import P from 'pino'
+import qrcode from 'qrcode-terminal'
+import { handleMessage, loadCommands } from './handler.js'
+import { loadStore, saveStore } from './lib/store.js'
+
+const logger = P({ level: process.env.LOG_LEVEL || 'info' })
+const store = await loadStore()
+await loadCommands()
+
+let reconnectAttempts = 0
+
+export async function startBot() {
+  const { state, saveCreds } = await useMultiFileAuthState('sessions')
+  const { version } = await fetchLatestBaileysVersion()
+  const sock = makeWASocket({
+    version,
+    auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, logger) },
+    browser: Browsers.ubuntu('Chrome'),
+    logger,
+    printQRInTerminal: false,
+    markOnlineOnConnect: false,
+    syncFullHistory: false
+  })
+
+  sock.ev.on('creds.update', saveCreds)
+  sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
+    if (qr) qrcode.generate(qr, { small: true })
+    if (connection === 'open') {
+      reconnectAttempts = 0
+      console.log('✅ PIKORO WHATSAPP BOT conectado')
+    }
+    if (connection === 'close') {
+      const statusCode = lastDisconnect?.error?.output?.statusCode
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut
+      console.error(`Conexión cerrada (${statusCode ?? 'desconocido'}). Reconectar: ${shouldReconnect}`)
+      if (shouldReconnect) {
+        reconnectAttempts += 1
+        const delay = Math.min(30_000, 1_000 * 2 ** Math.min(reconnectAttempts, 5))
+        setTimeout(startBot, delay)
+      } else {
+        console.error('Sesión cerrada por WhatsApp. Borra sessions/ y vuelve a vincular.')
+      }
+    }
+  })
+  sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    if (type !== 'notify') return
+    for (const message of messages) {
+      if (!message.message || message.key.remoteJid === 'status@broadcast') continue
+      await handleMessage(sock, message, store)
+    }
+    await saveStore(store)
+  })
+}
+
+await startBot()

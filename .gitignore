@@ -1,4 +1,6 @@
 node_modules/
 .env
-auth_info_baileys/
-data/store.json
+sessions/
+storage/*.json
+*.log
+.DS_Store
