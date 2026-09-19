@@ -15,7 +15,6 @@ const reactions = {
   love: '❤️ siente cariño por'
 }
 
-const neutralDisabled = new Set(['pajero', 'pajera', 'puto', 'puta', 'prostituta', 'prostituto', 'cachuda', 'cachudo', 'negra', 'negro', 'adoptado', 'adoptada', 'sintetas', 'sinpoto', 'sinpito', 'penetrar', 'follar', 'violar'])
 
 export const commands = [
   ...Object.entries(reactions).map(([name, phrase]) => ({ name, async execute({ sock, chat, message, args }) { await reply(sock, chat, message, `${phrase} @${target(message, args).split('@')[0]}.`,) } })),
@@ -46,5 +45,4 @@ export const commands = [
   { name: 'ship5', async execute({ sock, chat, message }) { await reply(sock, chat, message, '👫 Top 5 recreativo: participa solo con el consentimiento de las personas mencionadas.') } },
   { name: 'slot', async execute({ sock, chat, message, args }) { const icons = ['🍒', '🍋', '⭐', '7️⃣']; const result = Array.from({ length: 3 }, () => icons[Math.floor(Math.random() * icons.length)]); await reply(sock, chat, message, `🎰 ${result.join(' | ')}\nApuesta recreativa: ${args[0] || 'sin apuesta'}`) } },
   { name: 'top', async execute({ sock, chat, message, text }) { await reply(sock, chat, message, `🔝 Ranking recreativo sobre: ${text || 'el grupo'}`) } },
-  ...[...neutralDisabled, 'horny'].map((name) => ({ name, async execute({ sock, chat, message }) { await reply(sock, chat, message, '⚠️ Este comando está deshabilitado por seguridad y respeto entre participantes.') } }))
 ]

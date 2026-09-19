@@ -1,4 +1,4 @@
-const adminActions = new Set(['kick', 'ban', 'unban', 'promote', 'demote', 'group', 'open', 'close', 'abrirgrupo', 'cerrargrupo', 'setname', 'setreglas', 'mute', 'unmute', 'del', 'link', 'admins', 'todos', 'hidetag'])
+const adminActions = new Set(['kick', 'ban', 'unban', 'promote', 'demote', 'group', 'open', 'close', 'abrirgrupo', 'cerrargrupo', 'setname', 'setreglas', 'mute', 'unmute', 'del', 'link', 'admins', 'todos', 'hidetag', 'antilink'])
 
 function jidFromNumber(value) {
   const digits = String(value || '').replace(/\D/g, '')
@@ -69,7 +69,7 @@ async function getGroupContext({ sock, message, chat, isGroup, sender, senderIds
   console.log(`[permissions] senderAdmin=${senderIsAdmin} senderOwner=${senderIsOwner} botAdmin=${botIsAdmin} command=${message._command || 'unknown'}`)
   if (!senderIsAdmin && !senderIsOwner) throw new Error('Solo los administradores del grupo pueden usar este comando.')
   if (adminActions.has(message._command) && !botIsAdmin) throw new Error('El bot necesita ser administrador del grupo para ejecutar este comando.')
-  return { metadata, participants, botIsAdmin }
+  return { metadata, participants, botIsAdmin, senderIsAdmin, senderIsOwner }
 }
 
 function targetLabel(jids) {
@@ -134,6 +134,7 @@ export const commands = [
   { name: 'link', async execute(context) { context.message._command = 'link'; const { sock, chat, message } = context; await getGroupContext(context); const code = await sock.groupInviteCode(chat); await reply(sock, chat, message, `🔗 Enlace del grupo:\nhttps://chat.whatsapp.com/${code}`) } },
   { name: 'admins', async execute(context) { context.message._command = 'admins'; const { sock, chat, message } = context; const { participants } = await getGroupContext(context); const admins = participants.filter((p) => p.admin).map((p) => `@${p.id.split('@')[0]}`).join('\n'); await reply(sock, chat, message, `👮 Administradores:\n${admins || 'Ninguno'}`) } },
   { name: 'todos', aliases: ['hidetag', 'tagall'], async execute(context) { context.message._command = 'todos'; const { sock, chat, message, text } = context; const { participants } = await getGroupContext(context); const mentions = participants.map((p) => p.id); await sock.sendMessage(chat, { text: text || '📣 Atención a todos', mentions }, { quoted: message }) } },
+  { name: 'antilink', async execute(context) { context.message._command = 'antilink'; await getGroupContext(context); context.store.chats[context.chat] ||= {}; context.store.chats[context.chat].antilink = !context.store.chats[context.chat].antilink; await reply(context.sock, context.chat, context.message, context.store.chats[context.chat].antilink ? '🔒 Antilink activado. Solo los administradores pueden enviar enlaces.' : '🔓 Antilink desactivado.') } },
   { name: 'del', aliases: ['delete'], async execute(context) { context.message._command = 'del'; const { sock, chat, message } = context; await getGroupContext(context); const quotedKey = message.message?.extendedTextMessage?.contextInfo?.stanzaId ? { remoteJid: chat, id: message.message.extendedTextMessage.contextInfo.stanzaId, participant: message.message.extendedTextMessage.contextInfo.participant } : null; if (!quotedKey) return reply(sock, chat, message, 'Responde al mensaje que quieres borrar.'); await sock.sendMessage(chat, { delete: quotedKey }); } }
 ]
 
