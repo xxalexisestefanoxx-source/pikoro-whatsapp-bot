@@ -91,10 +91,13 @@ Los comandos de administración requieren que quien los ejecuta sea administrado
 .hidetag mensaje opcional
 .mute @usuario
 .unmute @usuario
+.clear @usuario
 .del  (respondiendo a un mensaje)
 ```
 
-Para `.kick`, `.ban`, `.promote`, `.demote`, `.group`, `.open`, `.close`, `.setname`, `.setreglas`, `.link`, `.admins`, `.todos`, `.hidetag`, `.mute`, `.unmute` y `.del`, el bot debe tener privilegios de administrador.
+`.clear` elimina los mensajes registrados del usuario mencionado o del usuario cuyo mensaje se está respondiendo, e informa cuántos borrados tuvieron éxito. Solo administradores del grupo o el OWNER pueden ejecutarlo, y el bot debe ser administrador para que WhatsApp permita borrar los mensajes.
+
+Para `.kick`, `.ban`, `.promote`, `.demote`, `.group`, `.open`, `.close`, `.setname`, `.setreglas`, `.link`, `.admins`, `.todos`, `.hidetag`, `.mute`, `.unmute`, `.clear` y `.del`, el bot debe tener privilegios de administrador.
 
 ## GitHub
 

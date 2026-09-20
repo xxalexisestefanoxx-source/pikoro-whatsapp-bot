@@ -1,7 +1,7 @@
 import { getCommandNames, getPrefix } from '../handler.js'
 
 const sections = {
-  '🛡️ MODERACIÓN': ['kick', 'ban', 'unban', 'warn', 'warnings', 'mute', 'unmute', 'promote', 'demote', 'admins', 'del'],
+  '🛡️ MODERACIÓN': ['kick', 'ban', 'unban', 'warn', 'warnings', 'mute', 'unmute', 'promote', 'demote', 'admins', 'clear', 'del'],
   '🔐 SEGURIDAD': ['antilink', 'antispam', 'antiflood', 'antibot', 'antimention'],
   '👥 GESTIÓN': ['link', 'nuevolink', 'group', 'setname', 'setdesc', 'setreglas', 'reglas', 'todos', 'hidetag', 'welcome', 'goodbye'],
   '📥 DESCARGAS': ['play', 'ytsearch', 'spotify', 'tiktok', 'ig', 'fb'],

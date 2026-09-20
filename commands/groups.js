@@ -1,4 +1,6 @@
-const adminActions = new Set(['kick', 'ban', 'unban', 'promote', 'demote', 'group', 'open', 'close', 'abrirgrupo', 'cerrargrupo', 'setname', 'setdesc', 'setreglas', 'mute', 'unmute', 'del', 'link', 'nuevolink', 'admins', 'miembros', 'todos', 'hidetag', 'antilink', 'antispam', 'antiflood', 'antibot', 'antimention', 'approve', 'reject'])
+import { forgetMessages, getChat } from '../lib/store.js'
+
+const adminActions = new Set(['kick', 'ban', 'unban', 'promote', 'demote', 'group', 'open', 'close', 'abrirgrupo', 'cerrargrupo', 'setname', 'setdesc', 'setreglas', 'mute', 'unmute', 'del', 'clear', 'link', 'nuevolink', 'admins', 'miembros', 'todos', 'hidetag', 'antilink', 'antispam', 'antiflood', 'antibot', 'antimention', 'approve', 'reject'])
 
 function jidFromNumber(value) {
   const digits = String(value || '').replace(/\D/g, '')
@@ -84,6 +86,27 @@ async function setToggle(context, key, label) {
   await reply(sock, chat, message, `${store.chats[chat][key] ? '🔒 Activado' : '🔓 Desactivado'}: ${label}.`)
 }
 
+async function clearUserMessages(context) {
+  const { sock, chat, message, args, store } = context
+  const jids = targetJids({ message, args })
+  if (!jids.length) return reply(sock, chat, message, 'Uso: .clear @usuario (también puedes responder a uno de sus mensajes).')
+  const tracked = getChat(store, chat).messageLog || []
+  const candidates = tracked.filter((entry) => jids.some((jid) => matchesIdentity({ id: entry.sender }, [jid])))
+  if (!candidates.length) return reply(sock, chat, message, `No hay mensajes registrados de ${targetLabel(jids)}.`)
+
+  const deleted = []
+  for (const entry of candidates) {
+    try {
+      await sock.sendMessage(chat, { delete: entry.key })
+      deleted.push(entry.key)
+    } catch (error) {
+      console.error('[clear] no se pudo eliminar un mensaje:', error?.message || error)
+    }
+  }
+  forgetMessages(store, chat, deleted)
+  await reply(sock, chat, message, `🧹 Se eliminaron ${deleted.length} mensaje(s) de ${targetLabel(jids)}.`)
+}
+
 async function groupCommand(context) {
   const { sock, chat, message, args } = context
   const action = (args[0] || '').toLowerCase()
@@ -117,5 +140,6 @@ export const commands = [
   { name: 'antiflood', async execute(context) { await setToggle(context, 'antiflood', 'anti-flood') } },
   { name: 'antibot', async execute(context) { await setToggle(context, 'antibot', 'anti-bot') } },
   { name: 'antimention', async execute(context) { await setToggle(context, 'antimention', 'anti-mención masiva') } },
+  { name: 'clear', async execute(context) { context.message._command = 'clear'; await getGroupContext(context); await clearUserMessages(context) } },
   { name: 'del', aliases: ['delete'], async execute(context) { context.message._command = 'del'; await getGroupContext(context); const info = context.message.message?.extendedTextMessage?.contextInfo; if (!info?.stanzaId) return reply(context.sock, context.chat, context.message, 'Responde al mensaje que quieres borrar.'); await context.sock.sendMessage(context.chat, { delete: { remoteJid: context.chat, id: info.stanzaId, participant: info.participant } }) } }
 ]

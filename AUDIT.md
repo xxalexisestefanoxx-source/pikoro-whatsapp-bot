@@ -20,6 +20,7 @@ La instalación y las verificaciones locales no requieren API keys. La conexión
 | `.link`, `.nuevolink` | 🟢 Funciona sin API | No | Invitación y renovación con Baileys. |
 | `.admins`, `.miembros`, `.todos`, `.hidetag` | 🟢 Funciona sin API | No | Metadatos de grupo y menciones directas. |
 | `.mute`, `.unmute`, `.del` | 🟢 Funciona sin API | No | Estado local para mute y eliminación de mensajes citados. |
+| `.clear @usuario` | 🔵 Funciona localmente | No | Registra hasta 5000 claves por grupo, elimina las del usuario mencionado o citado y reporta únicamente eliminaciones confirmadas. Requiere administrador del grupo o OWNER y que el bot sea administrador. |
 | `.antilink` | 🟢 Funciona sin API | No | Detección local de enlaces y eliminación cuando el bot es administrador. |
 | `.antispam`, `.antiflood` | 🔵 Funciona localmente | No | Ventanas de tiempo en memoria por grupo/usuario; se reinician al reiniciar el proceso. |
 | `.antimention` | 🔵 Funciona localmente | No | Bloqueo de menciones masivas mediante el contenido del mensaje. |
@@ -40,7 +41,7 @@ Los estados anteriores describen implementación y pruebas estáticas/smoke; no 
 
 Se reforzó el cargador de comandos para evitar registros duplicados, se agregaron captions de imágenes y videos a la extracción de texto, se normalizó la persistencia con escritura atómica y valores por defecto por grupo, y se añadió cierre limpio ante `SIGINT`/`SIGTERM`. También se corrigió la separación entre configuración de cada grupo y estado global.
 
-La moderación ahora valida grupo, identidad del remitente, privilegios del remitente, privilegios del bot y objetivos protegidos. `.ban` y `.unban` conservan una lista por grupo; la automatización antilink, antispam, antiflood y antimention opera únicamente en el grupo que la activó.
+La moderación ahora valida grupo, identidad del remitente, privilegios del remitente, privilegios del bot y objetivos protegidos. `.ban` y `.unban` conservan una lista por grupo; `.clear` registra claves de mensajes entrantes por usuario y las elimina mediante Baileys; la automatización antilink, antispam, antiflood y antimention opera únicamente en el grupo que la activó.
 
 ### Funciones nuevas
 
@@ -60,4 +61,4 @@ Se ejecutó `npm ci`, se validaron todos los archivos JavaScript con `node --che
 
 ## Problemas pendientes
 
-La automatización requiere que el bot sea administrador del grupo y las operaciones dependen de las reglas vigentes de WhatsApp. El antispam y antiflood mantienen ventanas en memoria, por lo que no persisten entre reinicios. Para habilitar descargas o multimedia real se debe elegir y probar explícitamente `yt-dlp`, FFmpeg y los límites de tamaño/timeout en el entorno de despliegue. Para IA, clima, traducción o TTS se necesita un proveedor externo o una instalación local; no se incluyó ninguno por la restricción de no usar claves.
+La automatización requiere que el bot sea administrador del grupo y las operaciones dependen de las reglas vigentes de WhatsApp. El antispam y antiflood mantienen ventanas en memoria, por lo que no persisten entre reinicios. `.clear` solo puede borrar el historial que el bot haya registrado desde esta actualización y conserva como máximo 5000 claves por grupo para evitar crecimiento ilimitado. Para habilitar descargas o multimedia real se debe elegir y probar explícitamente `yt-dlp`, FFmpeg y los límites de tamaño/timeout en el entorno de despliegue. Para IA, clima, traducción o TTS se necesita un proveedor externo o una instalación local; no se incluyó ninguno por la restricción de no usar claves.

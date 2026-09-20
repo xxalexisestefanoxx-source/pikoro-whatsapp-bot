@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { getChat } from './lib/store.js'
+import { getChat, trackMessage } from './lib/store.js'
 import { getGroupContext, matchesIdentity, isAdminParticipant } from './commands/groups.js'
 
 const PREFIX = (process.env.BOT_PREFIX || (process.env.PREFIX?.length === 1 ? process.env.PREFIX : '.')).trim() || '.'
@@ -81,6 +81,7 @@ export async function handleMessage(sock, message, store) {
     const config = getChat(store, chat)
     config.activity ||= {}
     config.activity[sender] = Date.now()
+    trackMessage(store, chat, sender, message.key)
     if (await moderateIncoming(sock, message, store, context, text)) return
   }
   if (!text.startsWith(PREFIX)) return
