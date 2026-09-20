@@ -131,5 +131,7 @@ export const commands = [
   { name: 'setwelcome', async execute(context) { await welcomeSetting(context, 'welcome', false) } },
   { name: 'delwelcome', async execute(context) { await welcomeSetting(context, 'welcome', true) } },
   { name: 'setbye', async execute(context) { await welcomeSetting(context, 'bye', false) } },
-  { name: 'delbye', async execute(context) { await welcomeSetting(context, 'bye', true) } }
+  { name: 'delbye', async execute(context) { await welcomeSetting(context, 'bye', true) } },
+  { name: 'welcome', async execute(context) { await adminContext(context); const data = context.store.chats[context.chat] ||= {}; data.welcomeEnabled = (context.args[0] || '').toLowerCase() === 'on' ? true : (context.args[0] || '').toLowerCase() === 'off' ? false : !data.welcomeEnabled; await reply(context.sock, context.chat, context.message, `${data.welcomeEnabled ? '👋 Bienvenidas activadas' : '🔕 Bienvenidas desactivadas'}.`) } },
+  { name: 'goodbye', aliases: ['bye'], async execute(context) { await adminContext(context); const data = context.store.chats[context.chat] ||= {}; data.byeEnabled = (context.args[0] || '').toLowerCase() === 'on' ? true : (context.args[0] || '').toLowerCase() === 'off' ? false : !data.byeEnabled; await reply(context.sock, context.chat, context.message, `${data.byeEnabled ? '👋 Despedidas activadas' : '🔕 Despedidas desactivadas'}.`) } }
 ]

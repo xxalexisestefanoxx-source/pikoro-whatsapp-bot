@@ -1,4 +1,4 @@
-const adminActions = new Set(['kick', 'ban', 'unban', 'promote', 'demote', 'group', 'open', 'close', 'abrirgrupo', 'cerrargrupo', 'setname', 'setreglas', 'mute', 'unmute', 'del', 'link', 'admins', 'todos', 'hidetag', 'antilink'])
+const adminActions = new Set(['kick', 'ban', 'unban', 'promote', 'demote', 'group', 'open', 'close', 'abrirgrupo', 'cerrargrupo', 'setname', 'setdesc', 'setreglas', 'mute', 'unmute', 'del', 'link', 'nuevolink', 'admins', 'miembros', 'todos', 'hidetag', 'antilink', 'antispam', 'antiflood', 'antibot', 'antimention', 'approve', 'reject'])
 
 function jidFromNumber(value) {
   const digits = String(value || '').replace(/\D/g, '')
@@ -14,16 +14,15 @@ function identityKeys(value) {
 }
 
 function participantKeys(participant) {
-  return [participant?.id, participant?.jid, participant?.lid, participant?.phoneNumber, participant?.phone]
-    .flatMap(identityKeys)
+  return [participant?.id, participant?.jid, participant?.lid, participant?.phoneNumber, participant?.phone].flatMap(identityKeys)
 }
 
-function matchesIdentity(participant, identities) {
-  const known = new Set(identities.flatMap(identityKeys))
+export function matchesIdentity(participant, identities) {
+  const known = new Set((identities || []).flatMap(identityKeys))
   return participantKeys(participant).some((key) => known.has(key))
 }
 
-function isAdmin(participant) {
+export function isAdminParticipant(participant) {
   return participant?.admin === 'admin' || participant?.admin === 'superadmin' || participant?.admin === true
 }
 
@@ -40,36 +39,28 @@ function targetJids({ message, args }) {
   if (tagged.length) return [...new Set(tagged)]
   const quoted = quotedParticipant(message)
   if (quoted) return [quoted]
-  const fromArgs = args.map(jidFromNumber).filter(Boolean)
-  return [...new Set(fromArgs)]
+  return [...new Set(args.map(jidFromNumber).filter(Boolean))]
 }
 
-async function reply(sock, chat, message, text) {
-  await sock.sendMessage(chat, { text }, { quoted: message })
+async function reply(sock, chat, message, text, mentions) {
+  await sock.sendMessage(chat, { text, ...(mentions?.length ? { mentions } : {}) }, { quoted: message })
 }
 
-async function getGroupContext({ sock, message, chat, isGroup, sender, senderIds }) {
+export async function getGroupContext({ sock, message, chat, isGroup, sender, senderIds }) {
   if (!isGroup) throw new Error('Este comando solo funciona en grupos.')
   const metadata = await sock.groupMetadata(chat)
   const participants = metadata.participants || []
   const senderIdentities = senderIds?.length ? senderIds : [sender]
-  const botIdentities = [
-    sock.user?.id,
-    sock.user?.lid,
-    sock.user?.jid,
-    sock.user?.phoneNumber,
-    sock.user?.id?.split(':')[0]
-  ].filter(Boolean)
+  const botIdentities = [sock.user?.id, sock.user?.lid, sock.user?.jid, sock.user?.phoneNumber, sock.user?.id?.split(':')[0]].filter(Boolean)
   const ownerIdentities = [process.env.OWNER_NUMBER, jidFromNumber(process.env.OWNER_NUMBER)].filter(Boolean)
   const senderParticipant = participants.find((p) => matchesIdentity(p, senderIdentities))
   const botParticipant = participants.find((p) => matchesIdentity(p, botIdentities))
-  const senderIsAdmin = isAdmin(senderParticipant)
-  const botIsAdmin = isAdmin(botParticipant)
+  const senderIsAdmin = isAdminParticipant(senderParticipant)
+  const botIsAdmin = isAdminParticipant(botParticipant)
   const senderIsOwner = ownerIdentities.some((owner) => identityKeys(owner).some((key) => senderIdentities.flatMap(identityKeys).includes(key)))
-  console.log(`[permissions] senderAdmin=${senderIsAdmin} senderOwner=${senderIsOwner} botAdmin=${botIsAdmin} command=${message._command || 'unknown'}`)
   if (!senderIsAdmin && !senderIsOwner) throw new Error('Solo los administradores del grupo pueden usar este comando.')
   if (adminActions.has(message._command) && !botIsAdmin) throw new Error('El bot necesita ser administrador del grupo para ejecutar este comando.')
-  return { metadata, participants, botIsAdmin, senderIsAdmin, senderIsOwner }
+  return { metadata, participants, botParticipant, botIsAdmin, senderIsAdmin, senderIsOwner }
 }
 
 function targetLabel(jids) {
@@ -80,62 +71,51 @@ async function updateParticipants(context, action, success) {
   const { sock, chat, message, args } = context
   const jids = targetJids({ message, args })
   if (!jids.length) return reply(sock, chat, message, 'Responde al mensaje, etiqueta a un usuario o escribe su número con código de país.')
-  if (jids.some((jid) => identityKeys(jid).some((key) => identityKeys(sock.user?.id).includes(key)))) return reply(sock, chat, message, 'No puedo aplicar esa acción sobre mí mismo.')
+  if (jids.some((jid) => matchesIdentity({ id: jid }, [sock.user?.id, sock.user?.lid]))) return reply(sock, chat, message, 'No puedo aplicar esa acción sobre mí mismo.')
   await sock.groupParticipantsUpdate(chat, jids, action)
-  await reply(sock, chat, message, `${success}: ${targetLabel(jids)}`)
+  await reply(sock, chat, message, `${success}: ${targetLabel(jids)}`, jids)
+}
+
+async function setToggle(context, key, label) {
+  const { sock, chat, message, store } = context
+  await getGroupContext(context)
+  store.chats[chat] ||= {}
+  store.chats[chat][key] = !store.chats[chat][key]
+  await reply(sock, chat, message, `${store.chats[chat][key] ? '🔒 Activado' : '🔓 Desactivado'}: ${label}.`)
 }
 
 async function groupCommand(context) {
   const { sock, chat, message, args } = context
   const action = (args[0] || '').toLowerCase()
-  if (!['open', 'close', 'abrir', 'cerrar'].includes(action)) {
-    return reply(sock, chat, message, 'Uso: .group open | .group close')
-  }
+  if (!['open', 'close', 'abrir', 'cerrar'].includes(action)) return reply(sock, chat, message, 'Uso: .group open | .group close')
   const announce = action === 'close' || action === 'cerrar'
   await sock.groupSettingUpdate(chat, announce ? 'announcement' : 'not_announcement')
   await reply(sock, chat, message, announce ? '🔒 Grupo cerrado: solo administradores pueden escribir.' : '🔓 Grupo abierto: todos pueden escribir.')
 }
 
-async function setRules(context) {
-  const { sock, chat, message, text, store } = context
-  if (!text) return reply(sock, chat, message, 'Uso: .setreglas texto de las reglas')
-  store.chats[chat] ||= {}
-  store.chats[chat].rules = text
-  await reply(sock, chat, message, '✅ Reglas del grupo guardadas.')
-}
-
-async function muteUser(context, muted) {
-  const { sock, chat, message, args, store } = context
-  const jids = targetJids({ message, args })
-  if (!jids.length) return reply(sock, chat, message, 'Responde o etiqueta al usuario que deseas silenciar.')
-  store.chats[chat] ||= {}
-  store.chats[chat].mutedUsers ||= []
-  for (const jid of jids) {
-    if (muted && !store.chats[chat].mutedUsers.includes(jid)) store.chats[chat].mutedUsers.push(jid)
-    if (!muted) store.chats[chat].mutedUsers = store.chats[chat].mutedUsers.filter((item) => item !== jid)
-  }
-  await reply(sock, chat, message, muted ? `🔇 Usuario silenciado: ${targetLabel(jids)}` : `🔊 Usuario habilitado: ${targetLabel(jids)}`)
-}
-
 export const commands = [
   { name: 'kick', async execute(context) { context.message._command = 'kick'; await getGroupContext(context); await updateParticipants(context, 'remove', '👢 Expulsado') } },
-  { name: 'ban', async execute(context) { context.message._command = 'ban'; await getGroupContext(context); await updateParticipants(context, 'remove', '⛔ Expulsado') } },
-  { name: 'unban', async execute(context) { context.message._command = 'unban'; await getGroupContext(context); await reply(context.sock, context.chat, context.message, 'Para desbloquear a un usuario, usa .invite <número> después de que vuelva a entrar al grupo.') } },
+  { name: 'ban', async execute(context) { context.message._command = 'ban'; const { store, chat } = context; await getGroupContext(context); const jids = targetJids(context); if (!jids.length) return reply(context.sock, chat, context.message, 'Responde o etiqueta al usuario que deseas banear.'); store.chats[chat] ||= {}; store.chats[chat].bannedUsers = [...new Set([...(store.chats[chat].bannedUsers || []), ...jids])]; await updateParticipants(context, 'remove', '⛔ Baneado') } },
+  { name: 'unban', async execute(context) { context.message._command = 'unban'; await getGroupContext(context); const jids = targetJids(context); context.store.chats[context.chat] ||= {}; context.store.chats[context.chat].bannedUsers = (context.store.chats[context.chat].bannedUsers || []).filter((jid) => !jids.includes(jid)); await reply(context.sock, context.chat, context.message, jids.length ? `✅ Baneo retirado: ${targetLabel(jids)}` : 'Responde o etiqueta al usuario.') } },
   { name: 'promote', aliases: ['darpoder'], async execute(context) { context.message._command = 'promote'; await getGroupContext(context); await updateParticipants(context, 'promote', '📈 Promovido a administrador') } },
   { name: 'demote', aliases: ['delpoder'], async execute(context) { context.message._command = 'demote'; await getGroupContext(context); await updateParticipants(context, 'demote', '📉 Degradado de administrador') } },
   { name: 'group', aliases: ['grupo'], async execute(context) { context.message._command = 'group'; await getGroupContext(context); await groupCommand(context) } },
   { name: 'open', aliases: ['abrirgrupo'], async execute(context) { context.args = ['open']; context.message._command = 'open'; await getGroupContext(context); await groupCommand(context) } },
   { name: 'close', aliases: ['cerrargrupo'], async execute(context) { context.args = ['close']; context.message._command = 'close'; await getGroupContext(context); await groupCommand(context) } },
-  { name: 'setname', async execute(context) { context.message._command = 'setname'; const { sock, chat, message, text } = context; await getGroupContext(context); if (!text) return reply(sock, chat, message, 'Uso: .setname Nuevo nombre'); await sock.groupUpdateSubject(chat, text); await reply(sock, chat, message, '✅ Nombre del grupo actualizado.') } },
-  { name: 'setreglas', aliases: ['setrules'], async execute(context) { context.message._command = 'setreglas'; await getGroupContext(context); await setRules(context) } },
-  { name: 'reglas', aliases: ['rules'], async execute({ sock, chat, message, store }) { if (!chat.endsWith('@g.us')) return reply(sock, chat, message, 'Este comando solo funciona en grupos.'); await reply(sock, chat, message, `📜 Reglas del grupo:\n${store.chats[chat]?.rules || 'Aún no se han configurado reglas.'}`) } },
-  { name: 'mute', async execute(context) { context.message._command = 'mute'; await getGroupContext(context); await muteUser(context, true) } },
-  { name: 'unmute', async execute(context) { context.message._command = 'unmute'; await getGroupContext(context); await muteUser(context, false) } },
-  { name: 'link', async execute(context) { context.message._command = 'link'; const { sock, chat, message } = context; await getGroupContext(context); const code = await sock.groupInviteCode(chat); await reply(sock, chat, message, `🔗 Enlace del grupo:\nhttps://chat.whatsapp.com/${code}`) } },
-  { name: 'admins', async execute(context) { context.message._command = 'admins'; const { sock, chat, message } = context; const { participants } = await getGroupContext(context); const admins = participants.filter((p) => p.admin).map((p) => `@${p.id.split('@')[0]}`).join('\n'); await reply(sock, chat, message, `👮 Administradores:\n${admins || 'Ninguno'}`) } },
-  { name: 'todos', aliases: ['hidetag', 'tagall'], async execute(context) { context.message._command = 'todos'; const { sock, chat, message, text } = context; const { participants } = await getGroupContext(context); const mentions = participants.map((p) => p.id); await sock.sendMessage(chat, { text: text || '📣 Atención a todos', mentions }, { quoted: message }) } },
-  { name: 'antilink', async execute(context) { context.message._command = 'antilink'; await getGroupContext(context); context.store.chats[context.chat] ||= {}; context.store.chats[context.chat].antilink = !context.store.chats[context.chat].antilink; await reply(context.sock, context.chat, context.message, context.store.chats[context.chat].antilink ? '🔒 Antilink activado. Solo los administradores pueden enviar enlaces.' : '🔓 Antilink desactivado.') } },
-  { name: 'del', aliases: ['delete'], async execute(context) { context.message._command = 'del'; const { sock, chat, message } = context; await getGroupContext(context); const quotedKey = message.message?.extendedTextMessage?.contextInfo?.stanzaId ? { remoteJid: chat, id: message.message.extendedTextMessage.contextInfo.stanzaId, participant: message.message.extendedTextMessage.contextInfo.participant } : null; if (!quotedKey) return reply(sock, chat, message, 'Responde al mensaje que quieres borrar.'); await sock.sendMessage(chat, { delete: quotedKey }); } }
+  { name: 'setname', async execute(context) { context.message._command = 'setname'; await getGroupContext(context); if (!context.text) return reply(context.sock, context.chat, context.message, 'Uso: .setname Nuevo nombre'); await context.sock.groupUpdateSubject(context.chat, context.text); await reply(context.sock, context.chat, context.message, '✅ Nombre del grupo actualizado.') } },
+  { name: 'setdesc', async execute(context) { context.message._command = 'setdesc'; await getGroupContext(context); if (!context.text) return reply(context.sock, context.chat, context.message, 'Uso: .setdesc Nueva descripción'); await context.sock.groupUpdateDescription(context.chat, context.text); await reply(context.sock, context.chat, context.message, '✅ Descripción actualizada.') } },
+  { name: 'setreglas', aliases: ['setrules'], async execute(context) { context.message._command = 'setreglas'; await getGroupContext(context); if (!context.text) return reply(context.sock, context.chat, context.message, 'Uso: .setreglas texto'); context.store.chats[context.chat].rules = context.text; await reply(context.sock, context.chat, context.message, '✅ Reglas guardadas.') } },
+  { name: 'reglas', aliases: ['rules'], async execute({ sock, chat, message, store }) { if (!chat?.endsWith('@g.us')) return reply(sock, chat, message, 'Este comando solo funciona en grupos.'); await reply(sock, chat, message, `📜 Reglas del grupo:\n${store.chats[chat]?.rules || 'Aún no se han configurado reglas.'}`) } },
+  { name: 'mute', async execute(context) { context.message._command = 'mute'; await getGroupContext(context); const jids = targetJids(context); context.store.chats[context.chat].mutedUsers = [...new Set([...(context.store.chats[context.chat].mutedUsers || []), ...jids])]; await reply(context.sock, context.chat, context.message, jids.length ? `🔇 Silenciado: ${targetLabel(jids)}` : 'Responde o etiqueta al usuario.') } },
+  { name: 'unmute', async execute(context) { context.message._command = 'unmute'; await getGroupContext(context); const jids = targetJids(context); context.store.chats[context.chat].mutedUsers = (context.store.chats[context.chat].mutedUsers || []).filter((jid) => !jids.includes(jid)); await reply(context.sock, context.chat, context.message, jids.length ? `🔊 Habilitado: ${targetLabel(jids)}` : 'Responde o etiqueta al usuario.') } },
+  { name: 'link', async execute(context) { context.message._command = 'link'; await getGroupContext(context); const code = await context.sock.groupInviteCode(context.chat); await reply(context.sock, context.chat, context.message, `🔗 Enlace del grupo:\nhttps://chat.whatsapp.com/${code}`) } },
+  { name: 'nuevolink', async execute(context) { context.message._command = 'nuevolink'; await getGroupContext(context); await context.sock.groupRevokeInvite(context.chat); const code = await context.sock.groupInviteCode(context.chat); await reply(context.sock, context.chat, context.message, `🔄 Enlace renovado:\nhttps://chat.whatsapp.com/${code}`) } },
+  { name: 'admins', aliases: ['miembros'], async execute(context) { context.message._command = 'admins'; const { participants } = await getGroupContext(context); const admins = participants.filter(isAdminParticipant); await reply(context.sock, context.chat, context.message, `👮 Administradores (${admins.length}):\n${admins.map((p) => `@${p.id.split('@')[0]}`).join('\n') || 'Ninguno'}`, admins.map((p) => p.id)) } },
+  { name: 'todos', aliases: ['hidetag', 'tagall'], async execute(context) { context.message._command = 'todos'; const { participants } = await getGroupContext(context); const mentions = participants.map((p) => p.id); await reply(context.sock, context.chat, context.message, context.text || '📣 Atención a todos', mentions) } },
+  { name: 'antilink', async execute(context) { await setToggle(context, 'antilink', 'anti-enlaces') } },
+  { name: 'antispam', async execute(context) { await setToggle(context, 'antispam', 'anti-spam') } },
+  { name: 'antiflood', async execute(context) { await setToggle(context, 'antiflood', 'anti-flood') } },
+  { name: 'antibot', async execute(context) { await setToggle(context, 'antibot', 'anti-bot') } },
+  { name: 'antimention', async execute(context) { await setToggle(context, 'antimention', 'anti-mención masiva') } },
+  { name: 'del', aliases: ['delete'], async execute(context) { context.message._command = 'del'; await getGroupContext(context); const info = context.message.message?.extendedTextMessage?.contextInfo; if (!info?.stanzaId) return reply(context.sock, context.chat, context.message, 'Responde al mensaje que quieres borrar.'); await context.sock.sendMessage(context.chat, { delete: { remoteJid: context.chat, id: info.stanzaId, participant: info.participant } }) } }
 ]
-
-export { getGroupContext }
