@@ -65,8 +65,12 @@ export async function getGroupContext({ sock, message, chat, isGroup, sender, se
   return { metadata, participants, botParticipant, botIsAdmin, senderIsAdmin, senderIsOwner }
 }
 
-function targetLabel(jids) {
-  return jids.map((jid) => `@${jid.split('@')[0]}`).join(', ')
+function targetLabel(jids, participants = []) {
+  return jids.map((jid) => {
+    const participant = participants.find((item) => matchesIdentity(item, [jid]))
+    const phone = participant?.phoneNumber || (participant?.id?.endsWith('@s.whatsapp.net') ? participant.id : null)
+    return `@${String(phone || jid).split('@')[0]}`
+  }).join(', ')
 }
 
 async function updateParticipants(context, action, success) {
@@ -88,11 +92,13 @@ async function setToggle(context, key, label) {
 
 async function clearUserMessages(context) {
   const { sock, chat, message, args, store } = context
+  const { participants } = await getGroupContext(context)
   const jids = targetJids({ message, args })
   if (!jids.length) return reply(sock, chat, message, 'Uso: .clear @usuario (también puedes responder a uno de sus mensajes).')
+  const label = targetLabel(jids, participants)
   const tracked = getChat(store, chat).messageLog || []
   const candidates = tracked.filter((entry) => jids.some((jid) => matchesIdentity({ id: entry.sender }, [jid])))
-  if (!candidates.length) return reply(sock, chat, message, `No hay mensajes registrados de ${targetLabel(jids)}.`)
+  if (!candidates.length) return reply(sock, chat, message, `No hay mensajes registrados de ${label}.`)
 
   const deleted = []
   for (const entry of candidates) {
@@ -104,7 +110,7 @@ async function clearUserMessages(context) {
     }
   }
   forgetMessages(store, chat, deleted)
-  await reply(sock, chat, message, `🧹 Se eliminaron ${deleted.length} mensaje(s) de ${targetLabel(jids)}.`)
+  await reply(sock, chat, message, `🧹 Se eliminaron ${deleted.length} mensaje(s) de ${label}.`)
 }
 
 async function groupCommand(context) {
@@ -140,6 +146,6 @@ export const commands = [
   { name: 'antiflood', async execute(context) { await setToggle(context, 'antiflood', 'anti-flood') } },
   { name: 'antibot', async execute(context) { await setToggle(context, 'antibot', 'anti-bot') } },
   { name: 'antimention', async execute(context) { await setToggle(context, 'antimention', 'anti-mención masiva') } },
-  { name: 'clear', async execute(context) { context.message._command = 'clear'; await getGroupContext(context); await clearUserMessages(context) } },
+  { name: 'clear', async execute(context) { context.message._command = 'clear'; await clearUserMessages(context) } },
   { name: 'del', aliases: ['delete'], async execute(context) { context.message._command = 'del'; await getGroupContext(context); const info = context.message.message?.extendedTextMessage?.contextInfo; if (!info?.stanzaId) return reply(context.sock, context.chat, context.message, 'Responde al mensaje que quieres borrar.'); await context.sock.sendMessage(context.chat, { delete: { remoteJid: context.chat, id: info.stanzaId, participant: info.participant } }) } }
 ]
