@@ -41,7 +41,7 @@ Los estados anteriores describen implementación y pruebas estáticas/smoke; no 
 
 Se reforzó el cargador de comandos para evitar registros duplicados, se agregaron captions de imágenes y videos a la extracción de texto, se normalizó la persistencia con escritura atómica y valores por defecto por grupo, y se añadió cierre limpio ante `SIGINT`/`SIGTERM`. También se corrigió la separación entre configuración de cada grupo y estado global.
 
-La moderación ahora valida grupo, identidad del remitente, privilegios del remitente, privilegios del bot y objetivos protegidos. `.ban` y `.unban` conservan una lista por grupo; `.clear` registra claves de mensajes entrantes por usuario y las elimina mediante Baileys; la automatización antilink, antispam, antiflood y antimention opera únicamente en el grupo que la activó.
+La moderación ahora valida grupo, identidad del remitente, privilegios del remitente, privilegios del bot y objetivos protegidos. Los comandos que muestran participantes prefieren el número telefónico disponible en los metadatos en lugar del LID interno. `.ban` y `.unban` conservan una lista por grupo; `.clear` registra claves de mensajes entrantes por usuario y las elimina mediante Baileys; la automatización antilink, antispam, antiflood y antimention opera únicamente en el grupo que la activó.
 
 ### Funciones nuevas
 

@@ -1,3 +1,5 @@
+import { matchesIdentity, participantLabel } from './groups.js'
+
 function reply(sock, chat, message, text) {
   return sock.sendMessage(chat, { text }, { quoted: message })
 }
@@ -64,7 +66,9 @@ async function toggleBlock(context, unblock) {
   const [jid] = idsFromMessage(message, args)
   if (!jid) return reply(sock, chat, message, 'Responde, etiqueta o escribe un número con código de país.')
   await sock.updateBlockStatus(jid, unblock ? 'unblock' : 'block')
-  await reply(sock, chat, message, `${unblock ? '✅ Desbloqueado' : '🚫 Bloqueado'}: @${jid.split('@')[0]}`)
+  const metadata = chat?.endsWith('@g.us') ? await sock.groupMetadata(chat).catch(() => null) : null
+  const participant = metadata?.participants?.find((item) => matchesIdentity(item, [jid]))
+  await reply(sock, chat, message, `${unblock ? '✅ Desbloqueado' : '🚫 Bloqueado'}: ${participantLabel(participant, jid)}`)
 }
 
 async function groupBanState(context, banned) {
@@ -85,7 +89,7 @@ async function ghosts(context, remove) {
     await context.sock.groupParticipantsUpdate(context.chat, ghosts.map((participant) => participant.id), 'remove')
     return reply(context.sock, context.chat, context.message, `👻 Expulsados ${ghosts.length} miembros inactivos.`)
   }
-  return reply(context.sock, context.chat, context.message, `👻 Inactivos detectados: ${ghosts.map((p) => `@${p.id.split('@')[0]}`).join(', ')}`)
+  return reply(context.sock, context.chat, context.message, `👻 Inactivos detectados: ${ghosts.map((p) => participantLabel(p)).join(', ')}`)
 }
 
 async function scheduledGroup(context, close) {
@@ -124,8 +128,8 @@ export const commands = [
   { name: 'kickfantasmas', async execute(context) { await ghosts(context, true) } },
   { name: 'nuevolink', async execute(context) { await adminContext(context); const code = await context.sock.groupRevokeInvite(context.chat); const newCode = await context.sock.groupInviteCode(context.chat); await reply(context.sock, context.chat, context.message, `🔄 Enlace renovado:\nhttps://chat.whatsapp.com/${newCode}`) } },
   { name: 'donarsala', async execute({ sock, chat, message }) { await reply(sock, chat, message, '🎁 Si quieres apoyar el bot, contacta al propietario configurado en .owner.') } },
-  { name: 'sorteo', async execute(context) { const metadata = await adminContext(context); const candidates = metadata.participants.filter((p) => !p.admin); const winner = candidates[Math.floor(Math.random() * candidates.length)]; await reply(context.sock, context.chat, context.message, winner ? `🎟️ Ganador: @${winner.id.split('@')[0]}` : 'No hay participantes disponibles.') } },
-  { name: 'invite', async execute(context) { await adminContext(context); const [jid] = idsFromMessage(context.message, context.args); if (!jid) return reply(context.sock, context.chat, context.message, 'Uso: .invite número'); await context.sock.groupParticipantsUpdate(context.chat, [jid], 'add'); await reply(context.sock, context.chat, context.message, `📲 Invitación enviada a ${jid.split('@')[0]}.`) } },
+  { name: 'sorteo', async execute(context) { const metadata = await adminContext(context); const candidates = metadata.participants.filter((p) => !p.admin); const winner = candidates[Math.floor(Math.random() * candidates.length)]; await reply(context.sock, context.chat, context.message, winner ? `🎟️ Ganador: ${participantLabel(winner)}` : 'No hay participantes disponibles.') } },
+  { name: 'invite', async execute(context) { const metadata = await adminContext(context); const [jid] = idsFromMessage(context.message, context.args); if (!jid) return reply(context.sock, context.chat, context.message, 'Uso: .invite número'); await context.sock.groupParticipantsUpdate(context.chat, [jid], 'add'); const participant = metadata.participants.find((item) => matchesIdentity(item, [jid])); await reply(context.sock, context.chat, context.message, `📲 Invitación enviada a ${participantLabel(participant, jid)}.`) } },
   { name: 'abrirgrupoen', async execute(context) { await scheduledGroup(context, false) } },
   { name: 'cerrargrupoen', async execute(context) { await scheduledGroup(context, true) } },
   { name: 'setwelcome', async execute(context) { await welcomeSetting(context, 'welcome', false) } },

@@ -4,6 +4,7 @@ import P from 'pino'
 import qrcode from 'qrcode-terminal'
 import { handleMessage, loadCommands } from './handler.js'
 import { getChat, loadStore, saveStore } from './lib/store.js'
+import { matchesIdentity, participantLabel } from './commands/groups.js'
 
 const logger = P({ level: process.env.LOG_LEVEL || 'info' })
 const store = await loadStore()
@@ -53,7 +54,7 @@ export async function startBot() {
     const metadata = await sock.groupMetadata(id).catch(() => ({ subject: id, participants: [] }))
     const owner = process.env.OWNER_NUMBER || 'no configurado'
     const mentions = participants
-    const users = participants.map((jid) => `@${jid.split('@')[0]}`).join(', ')
+    const users = participants.map((jid) => participantLabel(metadata.participants.find((participant) => matchesIdentity(participant, [jid])), jid)).join(', ')
     const text = renderTemplate(template, { user: users, group: metadata.subject, count: metadata.participants.length, owner })
     await sock.sendMessage(id, { text, mentions }).catch((error) => logger.warn({ err: error }, '[welcome/bye]'))
   })
