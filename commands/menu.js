@@ -1,4 +1,7 @@
+import path from 'node:path'
 import { getCommandNames, getPrefix } from '../handler.js'
+
+const bannerPath = path.resolve('assets/pikoro-banner.jpg')
 
 const sections = {
   '🛡️ MODERACIÓN': ['kick', 'ban', 'unban', 'warn', 'warnings', 'mute', 'unmute', 'promote', 'demote', 'admins', 'clear', 'del'],
@@ -25,6 +28,6 @@ export const commands = [{
   name: 'menu',
   aliases: ['help', 'ayuda'],
   async execute({ sock, chat, message }) {
-    await sock.sendMessage(chat, { text: buildMenu() }, { quoted: message })
+    await sock.sendMessage(chat, { image: { url: bannerPath }, caption: buildMenu() }, { quoted: message })
   }
 }]
